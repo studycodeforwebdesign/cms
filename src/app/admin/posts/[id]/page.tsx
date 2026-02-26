@@ -165,6 +165,18 @@ export default function EditPostPage() {
 
     const handleBack = () => { if (unsavedChanges && !confirm("Thoát mà không lưu?")) return; router.push('/admin/posts'); };
 
+    // Ctrl+S / Cmd+S to save
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                handleSave();
+            }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    });
+
     type PostStatus = 'published' | 'scheduled' | 'draft';
     const getCurrentStatus = (): PostStatus => { if (form.isPublished) return 'published'; if (form.scheduledAt) return 'scheduled'; return 'draft'; };
     const setStatus = (s: PostStatus) => {

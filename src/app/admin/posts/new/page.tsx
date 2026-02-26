@@ -210,6 +210,18 @@ export default function NewPostPage() {
         return () => window.removeEventListener('beforeunload', handler);
     }, [unsavedChanges]);
 
+    // Ctrl+S / Cmd+S to save
+    useEffect(() => {
+        const handler = (e: KeyboardEvent) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                handleSave();
+            }
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+    });
+
     const generateSlug = (title: string) => {
         return title.toLowerCase().normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d")

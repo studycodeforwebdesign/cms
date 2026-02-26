@@ -3,11 +3,12 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { duplicatePost, restorePost, permanentDeletePost } from "@/lib/supabase";
 import { Post, Category } from "@/lib/types";
 import {
     Plus, Search, Trash2, Edit3, FileText,
     Check, X, Clock, Calendar, Send, FileX, Loader2,
-    ChevronLeft, ChevronRight,
+    ChevronLeft, ChevronRight, Copy, RotateCcw, Trash,
 } from "lucide-react";
 
 export default function PostsPage() {
@@ -15,7 +16,7 @@ export default function PostsPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState("");
-    const [filterStatus, setFilterStatus] = useState<"all" | "published" | "scheduled" | "draft">("all");
+    const [filterStatus, setFilterStatus] = useState<"all" | "published" | "scheduled" | "draft" | "trash">("all");
     const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
     const [bulkLoading, setBulkLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -45,9 +46,25 @@ export default function PostsPage() {
     }
 
     async function handleDelete(id: string) {
-        if (!confirm('Xóa bài viết này?')) return;
-        await supabase.from('posts').delete().eq('id', id);
+        if (!confirm('Chuyển bài viết vào thùng rác?')) return;
+        await supabase.from('posts').update({ deleted_at: new Date().toISOString(), is_published: false }).eq('id', id);
         fetchData();
+    }
+
+    async function handleRestore(id: string) {
+        await restorePost(id);
+        fetchData();
+    }
+
+    async function handlePermanentDelete(id: string) {
+        if (!confirm('⚠️ Xóa vĩnh viễn? Không thể khôi phục!')) return;
+        await permanentDeletePost(id);
+        fetchData();
+    }
+
+    async function handleDuplicate(id: string) {
+        const result = await duplicatePost(id);
+        if (result) fetchData();
     }
 
     async function bulkPublish() {
@@ -93,6 +110,9 @@ export default function PostsPage() {
     const filteredPosts = posts.filter(post => {
         const matchesSearch = post.title.toLowerCase().includes(searchQuery.toLowerCase());
         const status = getPostStatus(post);
+        const isDeleted = !!(post as any).deleted_at;
+        if (filterStatus === 'trash') return isDeleted && matchesSearch;
+        if (isDeleted) return false;
         const matchesFilter = filterStatus === "all" || filterStatus === status;
         return matchesSearch && matchesFilter;
     });
@@ -158,7 +178,8 @@ export default function PostsPage() {
                             { key: "all", label: "Tất cả" },
                             { key: "published", label: "Đã xuất bản" },
                             { key: "scheduled", label: "Lên lịch" },
-                            { key: "draft", label: "Nháp" }
+                            { key: "draft", label: "Nháp" },
+                            { key: "trash", label: "🗑 Thùng rác" }
                         ].map(filter => (
                             <button
                                 key={filter.key}
@@ -304,13 +325,29 @@ export default function PostsPage() {
                                         })()}
                                     </div>
 
-                                    <div className="col-span-1 flex items-center justify-end gap-1">
-                                        <Link href={`/admin/posts/${post.id}`} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors">
-                                            <Edit3 className="w-4 h-4" />
-                                        </Link>
-                                        <button onClick={() => handleDelete(post.id)} className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors">
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                    <div className="col-span-1 flex items-center justify-end gap-0.5">
+                                        {filterStatus === 'trash' ? (
+                                            <>
+                                                <button onClick={() => handleRestore(post.id)} className="p-2 rounded-lg hover:bg-emerald-50 text-gray-400 hover:text-emerald-600 transition-colors" title="Khôi phục">
+                                                    <RotateCcw className="w-4 h-4" />
+                                                </button>
+                                                <button onClick={() => handlePermanentDelete(post.id)} className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors" title="Xóa vĩnh viễn">
+                                                    <Trash className="w-4 h-4" />
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <button onClick={() => handleDuplicate(post.id)} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors" title="Nhân bản">
+                                                    <Copy className="w-3.5 h-3.5" />
+                                                </button>
+                                                <Link href={`/admin/posts/${post.id}`} className="p-2 rounded-lg hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors" title="Chỉnh sửa">
+                                                    <Edit3 className="w-4 h-4" />
+                                                </Link>
+                                                <button onClick={() => handleDelete(post.id)} className="p-2 rounded-lg hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors" title="Thùng rác">
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             ))}

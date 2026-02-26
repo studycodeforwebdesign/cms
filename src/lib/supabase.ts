@@ -71,9 +71,54 @@ export async function updatePost(id: string, updates: Partial<Post>) {
 }
 
 export async function deletePost(id: string) {
-    const { error } = await supabase.from('posts').delete().eq('id', id);
-    if (error) { console.error('Error deleting post:', error); return false; }
+    // Soft delete — move to trash
+    const { error } = await supabase
+        .from('posts')
+        .update({ deleted_at: new Date().toISOString(), is_published: false })
+        .eq('id', id);
+    if (error) { console.error('Error soft-deleting post:', error); return false; }
     return true;
+}
+
+export async function restorePost(id: string) {
+    const { error } = await supabase
+        .from('posts')
+        .update({ deleted_at: null })
+        .eq('id', id);
+    if (error) { console.error('Error restoring post:', error); return false; }
+    return true;
+}
+
+export async function permanentDeletePost(id: string) {
+    const { error } = await supabase.from('posts').delete().eq('id', id);
+    if (error) { console.error('Error permanently deleting post:', error); return false; }
+    return true;
+}
+
+export async function duplicatePost(id: string) {
+    const original = await getPostById(id);
+    if (!original) return null;
+
+    const { data, error } = await supabase
+        .from('posts')
+        .insert({
+            title: original.title + ' (bản sao)',
+            slug: original.slug + '-copy-' + Date.now(),
+            excerpt: original.excerpt,
+            content: original.content,
+            featured_image: original.featured_image,
+            featured_image_alt: original.featured_image_alt,
+            category_id: original.category_id,
+            tags: original.tags,
+            meta_title: original.meta_title,
+            meta_description: original.meta_description,
+            is_published: false,
+        })
+        .select()
+        .single();
+
+    if (error) { console.error('Error duplicating post:', error); return null; }
+    return data as Post;
 }
 
 // ==================== CATEGORIES CRUD ====================
