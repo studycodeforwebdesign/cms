@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/auth-context";
 import {
     Plus, Trash2, Edit3, Check, X, Users, Globe, Shield,
-    Building2, Loader2,
+    Building2, Loader2, Key, AlertTriangle,
 } from "lucide-react";
 
 interface Tenant {
@@ -39,6 +39,8 @@ export default function TenantsPage() {
     const [showForm, setShowForm] = useState<'tenant' | 'user' | null>(null);
     const [form, setForm] = useState<any>({});
     const [saving, setSaving] = useState(false);
+    const [license, setLicense] = useState<{ plan: string; maxSites: number; isValid: boolean } | null>(null);
+    const [canCreate, setCanCreate] = useState(true);
 
     useEffect(() => { fetchData(); }, []);
 
@@ -51,6 +53,13 @@ export default function TenantsPage() {
         setTenants(t || []);
         setUsers(u || []);
         setLoading(false);
+        // Check license
+        try {
+            const res = await fetch('/api/license');
+            const lic = await res.json();
+            setLicense(lic.license);
+            setCanCreate(lic.usage.canCreateMore);
+        } catch { }
     }
 
     async function saveTenant() {
@@ -134,10 +143,14 @@ export default function TenantsPage() {
                 </div>
                 <button
                     onClick={() => {
+                        if (tab === 'tenants' && !canCreate) {
+                            alert('Đã đạt giới hạn số site. Liên hệ mua license cao hơn.');
+                            return;
+                        }
                         setForm({});
                         setShowForm(tab === 'tenants' ? 'tenant' : 'user');
                     }}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gray-900 text-white font-medium text-sm hover:bg-gray-800 transition-all"
+                    className={`inline-flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium text-sm transition-all ${tab === 'tenants' && !canCreate ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-gray-900 text-white hover:bg-gray-800'}`}
                 >
                     <Plus className="w-4 h-4" />
                     {tab === 'tenants' ? 'Thêm Tenant' : 'Thêm User'}
@@ -154,6 +167,26 @@ export default function TenantsPage() {
                 </button>
             </div>
 
+            {/* License Info */}
+            {license && (
+                <div className={`rounded-xl p-4 flex items-center gap-4 ${license.plan === 'basic' ? 'bg-gray-50 border border-gray-200' : license.plan === 'pro' ? 'bg-emerald-50 border border-emerald-200' : 'bg-purple-50 border border-purple-200'}`}>
+                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${license.plan === 'basic' ? 'bg-gray-200' : license.plan === 'pro' ? 'bg-emerald-200' : 'bg-purple-200'}`}>
+                        <Key className={`w-5 h-5 ${license.plan === 'basic' ? 'text-gray-600' : license.plan === 'pro' ? 'text-emerald-600' : 'text-purple-600'}`} />
+                    </div>
+                    <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-900">License: <span className="uppercase">{license.plan}</span></p>
+                        <p className="text-xs text-gray-500">{tenants.length} / {license.maxSites >= 999 ? '∞' : license.maxSites} sites</p>
+                    </div>
+                    <div className="w-32 bg-gray-200 rounded-full h-2">
+                        <div className={`h-2 rounded-full transition-all ${tenants.length >= license.maxSites && license.maxSites < 999 ? 'bg-red-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(100, (tenants.length / Math.max(license.maxSites, 1)) * 100)}%` }} />
+                    </div>
+                    {!canCreate && tab === 'tenants' && (
+                        <div className="flex items-center gap-1.5 text-amber-600 text-xs font-medium">
+                            <AlertTriangle className="w-3.5 h-3.5" /> Đạt giới hạn
+                        </div>
+                    )}
+                </div>
+            )}
             {/* Form Modal */}
             {showForm && (
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 space-y-4">
