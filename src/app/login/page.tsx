@@ -165,12 +165,12 @@ export default function LoginPage() {
                                 transition: isFormValid ? 'transform 0.3s ease' : 'transform 0.15s ease-out',
                             }}
                             className={`absolute inset-0 w-full py-2.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2 ${isFormValid
-                                    ? 'bg-gray-900 text-white hover:bg-gray-800 cursor-pointer'
-                                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                ? 'bg-gray-900 text-white hover:bg-gray-800 cursor-pointer'
+                                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                 } disabled:opacity-50`}
                         >
                             {loading && <Loader2 size={14} className="animate-spin" />}
-                            {loading ? "Đang đăng nhập..." : isFormValid ? "Đăng nhập" : "Nhập đủ thông tin đã 😏"}
+                            {loading ? "Đang đăng nhập..." : isFormValid ? "Đăng nhập" : "Nhập đủ thông tin đã"}
                         </button>
                     </div>
 
