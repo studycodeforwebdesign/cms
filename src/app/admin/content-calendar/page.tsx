@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { getScheduledContent, createScheduledContent, updateScheduledContent, deleteScheduledContent } from "@/lib/supabase";
 import { ScheduledContent } from "@/lib/types";
 import {
-    Calendar, Plus, Trash2, Edit3, Clock, X, Check,
+    Calendar, Plus, Trash2, Edit3, Check,
     Loader2, ChevronLeft, ChevronRight,
 } from "lucide-react";
 
@@ -58,6 +58,7 @@ export default function ContentCalendarPage() {
         setEditingId(null); setShowForm(false); setSaving(false);
         loadItems();
     }
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
 
     async function handleDelete(id: string) {
         if (!confirm('Xóa?')) return;

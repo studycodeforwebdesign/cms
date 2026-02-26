@@ -82,7 +82,7 @@ export async function GET(request: NextRequest) {
                 totalPages: Math.ceil((count || 0) / limit),
             }
         });
-    } catch (err) {
+    } catch {
         return NextResponse.json({ error: 'Server error' }, { status: 500 });
     }
 }

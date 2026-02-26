@@ -7,7 +7,7 @@ import MediaLibrary from "@/components/admin/MediaLibrary";
 import { uploadImage, getPostById, updatePost, getCategories, getTags, createTag } from "@/lib/supabase";
 import {
     ChevronLeft, Loader2, Trash2, Image as ImageIcon,
-    Type, Hash, Clock, AlertCircle, ChevronUp, ChevronDown,
+    Type, Hash, Clock, ChevronUp, ChevronDown,
     X, Plus,
 } from "lucide-react";
 
@@ -94,6 +94,7 @@ export default function EditPostPage() {
     const params = useParams();
     const postId = params.id as string;
     const [loading, setLoading] = useState(true);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [unsavedChanges, setUnsavedChanges] = useState(false);

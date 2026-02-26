@@ -12,7 +12,7 @@ import {
     Plus,
     Clock,
     ArrowUpRight,
-    Eye,
+
     Edit3,
     Calendar,
     Image as ImageIcon,
