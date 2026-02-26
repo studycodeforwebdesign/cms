@@ -170,7 +170,7 @@ export default function LoginPage() {
                                 } disabled:opacity-50`}
                         >
                             {loading && <Loader2 size={14} className="animate-spin" />}
-                            {loading ? "Đang đăng nhập..." : isFormValid ? "Đăng nhập" : "Nhập đủ thông tin đã"}
+                            {loading ? "Đang đăng nhập..." : isFormValid ? "Đăng nhập" : "Điền thông tin để tiếp tục"}
                         </button>
                     </div>
 
