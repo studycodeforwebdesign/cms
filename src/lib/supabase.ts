@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import { Post, Category, Tag, MediaFile, ScheduledContent, PageContent } from './types';
+import { withTenantId } from './tenant-filter';
 
 // ==================== CLIENT ====================
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -50,7 +51,7 @@ export async function getPostBySlug(slug: string) {
 export async function createPost(post: Partial<Post>) {
     const { data, error } = await supabase
         .from('posts')
-        .insert([post])
+        .insert([withTenantId(post)])
         .select()
         .single();
 

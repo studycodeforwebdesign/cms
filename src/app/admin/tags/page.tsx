@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { tenantQuery, withTenantId } from "@/lib/tenant-filter";
 import { Tag } from "@/lib/types";
 import { Plus, Trash2, Tags as TagsIcon, Loader2, Check, Edit3, Hash } from "lucide-react";
 
@@ -17,7 +18,7 @@ export default function TagsPage() {
 
     async function fetchTags() {
         setLoading(true);
-        const { data } = await supabase.from('tags').select('*').order('name');
+        const { data } = await tenantQuery('tags').order('name');
         setTags(data || []);
         setLoading(false);
     }
@@ -31,7 +32,7 @@ export default function TagsPage() {
         if (editingId) {
             await supabase.from('tags').update({ name: form.name, slug, description: form.description || null }).eq('id', editingId);
         } else {
-            await supabase.from('tags').insert([{ name: form.name, slug, description: form.description || null }]);
+            await supabase.from('tags').insert([withTenantId({ name: form.name, slug, description: form.description || null })]);
         }
         setForm({ name: "", slug: "", description: "" });
         setEditingId(null); setShowForm(false); setSaving(false);

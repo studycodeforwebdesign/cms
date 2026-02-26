@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { getTenantIdFromCookie, getUserRoleFromCookie } from "@/lib/tenant-filter";
 import { Post, DashboardStats } from "@/lib/types";
 import {
     FileText,
@@ -90,6 +91,10 @@ export default function AdminDashboard() {
                 const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1).toISOString();
                 const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0).toISOString();
 
+                const tenantId = getTenantIdFromCookie();
+                const role = getUserRoleFromCookie();
+                const tf = (q: any) => (role !== 'super_admin' && tenantId) ? q.eq('tenant_id', tenantId) : q;
+
                 const [
                     { count: postsCount },
                     { count: catsCount },
@@ -103,17 +108,17 @@ export default function AdminDashboard() {
                     { data: scheduled },
                     { data: weekly }
                 ] = await Promise.all([
-                    supabase.from('posts').select('*', { count: 'exact', head: true }),
-                    supabase.from('categories').select('*', { count: 'exact', head: true }),
-                    supabase.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', true),
-                    supabase.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', false).or('scheduled_at.is.null,scheduled_at.lte.' + now.toISOString()),
-                    supabase.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', false).not('scheduled_at', 'is', null).gt('scheduled_at', now.toISOString()),
-                    supabase.from('posts').select('*', { count: 'exact', head: true }).gte('created_at', thisMonthStart),
-                    supabase.from('posts').select('*', { count: 'exact', head: true }).gte('created_at', lastMonthStart).lte('created_at', lastMonthEnd),
-                    supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(5),
-                    supabase.from('posts').select('*').eq('is_published', false).or('scheduled_at.is.null,scheduled_at.lte.' + now.toISOString()).order('created_at', { ascending: false }).limit(5),
-                    supabase.from('posts').select('*').eq('is_published', false).not('scheduled_at', 'is', null).gt('scheduled_at', now.toISOString()).order('scheduled_at', { ascending: true }).limit(5),
-                    supabase.from('posts').select('id,created_at').gte('created_at', new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6).toISOString()).is('deleted_at', null)
+                    tf(supabase.from('posts').select('*', { count: 'exact', head: true })),
+                    tf(supabase.from('categories').select('*', { count: 'exact', head: true })),
+                    tf(supabase.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', true)),
+                    tf(supabase.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', false).or('scheduled_at.is.null,scheduled_at.lte.' + now.toISOString())),
+                    tf(supabase.from('posts').select('*', { count: 'exact', head: true }).eq('is_published', false).not('scheduled_at', 'is', null).gt('scheduled_at', now.toISOString())),
+                    tf(supabase.from('posts').select('*', { count: 'exact', head: true }).gte('created_at', thisMonthStart)),
+                    tf(supabase.from('posts').select('*', { count: 'exact', head: true }).gte('created_at', lastMonthStart).lte('created_at', lastMonthEnd)),
+                    tf(supabase.from('posts').select('*').order('created_at', { ascending: false }).limit(5)),
+                    tf(supabase.from('posts').select('*').eq('is_published', false).or('scheduled_at.is.null,scheduled_at.lte.' + now.toISOString()).order('created_at', { ascending: false }).limit(5)),
+                    tf(supabase.from('posts').select('*').eq('is_published', false).not('scheduled_at', 'is', null).gt('scheduled_at', now.toISOString()).order('scheduled_at', { ascending: true }).limit(5)),
+                    tf(supabase.from('posts').select('id,created_at').gte('created_at', new Date(now.getFullYear(), now.getMonth(), now.getDate() - 6).toISOString()).is('deleted_at', null))
                 ]);
 
                 let imagesCount = 0;

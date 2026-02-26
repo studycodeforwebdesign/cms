@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
+import { tenantQuery, withTenantId } from "@/lib/tenant-filter";
 import { Category } from "@/lib/types";
 import { Plus, Edit3, Trash2, FolderOpen, Loader2, X, Check } from "lucide-react";
 
@@ -17,7 +18,7 @@ export default function CategoriesPage() {
 
     async function fetchCategories() {
         setLoading(true);
-        const { data } = await supabase.from('categories').select('*').order('name');
+        const { data } = await tenantQuery('categories').order('name');
         setCategories(data || []);
         setLoading(false);
     }
@@ -31,7 +32,7 @@ export default function CategoriesPage() {
         if (editingId) {
             await supabase.from('categories').update({ name: form.name, slug, description: form.description || null }).eq('id', editingId);
         } else {
-            await supabase.from('categories').insert([{ name: form.name, slug, description: form.description || null }]);
+            await supabase.from('categories').insert([withTenantId({ name: form.name, slug, description: form.description || null })]);
         }
         setForm({ name: "", slug: "", description: "" });
         setEditingId(null);

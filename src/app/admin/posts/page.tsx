@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { duplicatePost, restorePost, permanentDeletePost } from "@/lib/supabase";
+import { tenantQuery } from "@/lib/tenant-filter";
 import { Post, Category } from "@/lib/types";
 import {
     Plus, Search, Trash2, Edit3, FileText,
@@ -27,8 +28,8 @@ export default function PostsPage() {
     async function fetchData() {
         setLoading(true);
         const [postsRes, catsRes] = await Promise.all([
-            supabase.from('posts').select('*').order('created_at', { ascending: false }),
-            supabase.from('categories').select('*')
+            tenantQuery('posts').order('created_at', { ascending: false }),
+            tenantQuery('categories')
         ]);
         setPosts(postsRes.data || []);
         setCategories(catsRes.data || []);
