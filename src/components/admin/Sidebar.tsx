@@ -14,6 +14,7 @@ import {
     Settings,
     ChevronLeft,
     ChevronRight,
+    LogOut,
     MapPin,
     Activity,
     Link2,
@@ -100,6 +101,21 @@ export default function Sidebar() {
 
             {/* Footer */}
             <div className="border-t border-gray-100 p-3 space-y-1 flex-shrink-0">
+                <button
+                    onClick={async () => {
+                        await fetch('/api/auth/logout', { method: 'POST' });
+                        window.location.href = '/login';
+                    }}
+                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors w-full group relative"
+                >
+                    <LogOut className="w-[18px] h-[18px]" />
+                    {!collapsed && <span>Đăng xuất</span>}
+                    {collapsed && (
+                        <div className="absolute left-full ml-2 px-2.5 py-1.5 bg-gray-900 text-white text-xs rounded-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all whitespace-nowrap z-50 shadow-lg">
+                            Đăng xuất
+                        </div>
+                    )}
+                </button>
                 <button
                     onClick={() => setCollapsed(!collapsed)}
                     className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-gray-500 hover:bg-gray-50 hover:text-gray-700 transition-colors w-full"
