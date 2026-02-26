@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Settings as SettingsIcon, Globe, Database, Save, Loader2, Check, Info } from "lucide-react";
+import { Globe, Database, Save, Loader2, Check, Info } from "lucide-react";
 
 export default function SettingsPage() {
     const [saving, setSaving] = useState(false);

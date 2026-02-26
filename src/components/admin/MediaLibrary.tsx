@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { uploadImage, listStorageImages, deleteStorageImage } from "@/lib/supabase";
 import { MediaFile } from "@/lib/types";
 import {
-    X, Upload, Trash2, Check, Loader2, Search, Image as ImageIcon, Copy, ExternalLink
+    X, Upload, Trash2, Check, Loader2, Search, Image as ImageIcon, Copy
 } from "lucide-react";
 
 interface MediaLibraryProps {
@@ -139,8 +139,8 @@ export default function MediaLibrary({ isOpen, onClose, onSelect, bucket = 'post
                                 <div
                                     key={img.name}
                                     className={`relative aspect-square rounded-lg overflow-hidden cursor-pointer group border-2 transition-all ${selectedImage === img.url
-                                            ? 'border-gray-900 ring-2 ring-gray-900/20'
-                                            : 'border-transparent hover:border-gray-300'
+                                        ? 'border-gray-900 ring-2 ring-gray-900/20'
+                                        : 'border-transparent hover:border-gray-300'
                                         }`}
                                     onClick={() => setSelectedImage(img.url)}
                                 >

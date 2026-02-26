@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { Post } from "@/lib/types";
-import { Search, AlertTriangle, CheckCircle2, XCircle, FileText, ExternalLink, Loader2 } from "lucide-react";
+import { Search, CheckCircle2, XCircle, ExternalLink } from "lucide-react";
 
 interface SeoScore { title: string; slug: string; score: number; issues: string[]; passes: string[]; id: string; }
 

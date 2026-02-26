@@ -5,8 +5,8 @@ import { supabase } from "@/lib/supabase";
 import { Post, Category } from "@/lib/types";
 import {
     MapPin, Download, Copy, Check, RefreshCw,
-    ExternalLink, Globe, FileText, FolderOpen, Loader2,
-    CheckCircle2, XCircle, AlertTriangle,
+    Globe, FileText, FolderOpen, Loader2,
+    CheckCircle2, AlertTriangle,
 } from "lucide-react";
 
 interface SitemapEntry {

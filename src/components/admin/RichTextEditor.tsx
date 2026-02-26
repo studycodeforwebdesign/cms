@@ -8,8 +8,7 @@ import Image from '@tiptap/extension-image';
 import Underline from '@tiptap/extension-underline';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
-import { TextStyle } from '@tiptap/extension-text-style';
-import Color from '@tiptap/extension-color';
+import { TextStyleKit } from '@tiptap/extension-text-style';
 import {
     Bold, Italic, Underline as UnderlineIcon, Strikethrough,
     List, ListOrdered, Quote, Code, Image as ImageIcon,
@@ -38,8 +37,7 @@ export default function RichTextEditor({ content, onChange, placeholder = "Viế
             Underline,
             TextAlign.configure({ types: ['heading', 'paragraph'] }),
             Highlight.configure({ multicolor: true }),
-            TextStyle,
-            Color,
+            TextStyleKit,
         ],
         content,
         onUpdate: ({ editor }) => {
