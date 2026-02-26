@@ -177,6 +177,39 @@ export default function NewPostPage() {
         setUnsavedChanges(true);
     };
 
+    // Auto-save to localStorage every 30s
+    useEffect(() => {
+        if (!unsavedChanges) return;
+        const timer = setTimeout(() => {
+            localStorage.setItem('cms_draft_new', JSON.stringify(form));
+        }, 30000);
+        return () => clearTimeout(timer);
+    }, [form, unsavedChanges]);
+
+    // Restore draft on mount
+    useEffect(() => {
+        const saved = localStorage.getItem('cms_draft_new');
+        if (saved) {
+            try {
+                const draft = JSON.parse(saved);
+                if (draft.title && confirm('Có bản nháp chưa lưu. Khôi phục?')) {
+                    setForm(prev => ({ ...prev, ...draft }));
+                } else {
+                    localStorage.removeItem('cms_draft_new');
+                }
+            } catch { localStorage.removeItem('cms_draft_new'); }
+        }
+    }, []);
+
+    // Warn before leaving
+    useEffect(() => {
+        const handler = (e: BeforeUnloadEvent) => {
+            if (unsavedChanges) { e.preventDefault(); }
+        };
+        window.addEventListener('beforeunload', handler);
+        return () => window.removeEventListener('beforeunload', handler);
+    }, [unsavedChanges]);
+
     const generateSlug = (title: string) => {
         return title.toLowerCase().normalize("NFD")
             .replace(/[\u0300-\u036f]/g, "").replace(/đ/g, "d")
@@ -206,6 +239,7 @@ export default function NewPostPage() {
             const result = await createPost(postData);
             if (result) {
                 setUnsavedChanges(false);
+                localStorage.removeItem('cms_draft_new');
                 router.push('/admin/posts');
             } else {
                 alert("Có lỗi xảy ra!");

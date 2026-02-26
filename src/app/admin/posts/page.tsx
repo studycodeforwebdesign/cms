@@ -5,8 +5,9 @@ import Link from "next/link";
 import { supabase } from "@/lib/supabase";
 import { Post, Category } from "@/lib/types";
 import {
-    Plus, Search, Trash2, Eye, Edit3, FileText,
-    Check, X, Clock, Calendar, Send, FileX, Loader2
+    Plus, Search, Trash2, Edit3, FileText,
+    Check, X, Clock, Calendar, Send, FileX, Loader2,
+    ChevronLeft, ChevronRight,
 } from "lucide-react";
 
 export default function PostsPage() {
@@ -17,6 +18,8 @@ export default function PostsPage() {
     const [filterStatus, setFilterStatus] = useState<"all" | "published" | "scheduled" | "draft">("all");
     const [selectedPosts, setSelectedPosts] = useState<string[]>([]);
     const [bulkLoading, setBulkLoading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const postsPerPage = 20;
 
     useEffect(() => { fetchData(); }, []);
 
@@ -93,6 +96,12 @@ export default function PostsPage() {
         const matchesFilter = filterStatus === "all" || filterStatus === status;
         return matchesSearch && matchesFilter;
     });
+
+    const totalPages = Math.ceil(filteredPosts.length / postsPerPage);
+    const paginatedPosts = filteredPosts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
+
+    // Reset page when filters change
+    useEffect(() => { setCurrentPage(1); }, [searchQuery, filterStatus]);
 
     const getCategoryName = (categoryId: string | null) => {
         if (!categoryId) return 'Không có';
@@ -213,7 +222,7 @@ export default function PostsPage() {
 
                         {/* Table Body */}
                         <div className="divide-y divide-gray-100">
-                            {filteredPosts.map((post) => (
+                            {paginatedPosts.map((post) => (
                                 <div
                                     key={post.id}
                                     className={`grid grid-cols-12 gap-4 px-5 py-4 items-center hover:bg-gray-50 transition-colors ${selectedPosts.includes(post.id) ? 'bg-blue-50/50' : ''}`}
@@ -306,6 +315,45 @@ export default function PostsPage() {
                                 </div>
                             ))}
                         </div>
+
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="flex items-center justify-between px-5 py-3.5 bg-gray-50 border-t border-gray-100">
+                                <p className="text-xs text-gray-500">
+                                    Hiển thị {(currentPage - 1) * postsPerPage + 1}–{Math.min(currentPage * postsPerPage, filteredPosts.length)} / {filteredPosts.length} bài
+                                </p>
+                                <div className="flex items-center gap-1">
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                        disabled={currentPage === 1}
+                                        className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <ChevronLeft size={16} />
+                                    </button>
+                                    {Array.from({ length: totalPages }, (_, i) => i + 1)
+                                        .filter(p => p === 1 || p === totalPages || Math.abs(p - currentPage) <= 1)
+                                        .map((page, idx, arr) => (
+                                            <span key={page}>
+                                                {idx > 0 && arr[idx - 1] !== page - 1 && <span className="text-gray-300 px-1">…</span>}
+                                                <button
+                                                    onClick={() => setCurrentPage(page)}
+                                                    className={`w-8 h-8 rounded-lg text-xs font-medium transition-colors ${page === currentPage ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-200'
+                                                        }`}
+                                                >
+                                                    {page}
+                                                </button>
+                                            </span>
+                                        ))}
+                                    <button
+                                        onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                        disabled={currentPage === totalPages}
+                                        className="p-1.5 rounded-lg hover:bg-gray-200 text-gray-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                                    >
+                                        <ChevronRight size={16} />
+                                    </button>
+                                </div>
+                            </div>
+                        )}
                     </>
                 )}
             </div>
